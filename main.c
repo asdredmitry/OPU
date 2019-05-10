@@ -7,15 +7,16 @@ const double EPS = 1e-50;
 const double H_MIN =  __DBL_MAX__;
 
 const unsigned int FULL_NORM = 1;
-const unsigned int STEPS_COUNT = 1 << 1;
+const unsigned int LOL = (1 << 1);
 const unsigned int LAST_NORM = 1 << 2;
-const unsigned int NO_WRITE = 1 << 3;
+const unsigned int WRITE_IN_FILE = 1 << 3;
 const unsigned int GET_LAST = 1 << 5;
 const unsigned int PRINT_H = 1 << 6;
 const unsigned int PRINT_GLOBAL_ERROR = 1 << 7;
 
 const unsigned int WRITE_PERIODS = 1;
 const unsigned int WRITE_ZEROES = 1 << 2;
+const int MAX_STEPS_SHOOTING = 100000;
 
 
 const double fac = 0.8;
@@ -67,22 +68,34 @@ double f5(double t, double x1, double x2, double p1, double p2, double integr);
 double check_sol(double t);
 
 double norm(double x1, double x2, double p1, double p2, double integr);
+double norm2(double x1, double x2);
 double get_h(double h, double err, double tol);
 
 
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr);
-double solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, unsigned int attr, const char* name);
-
-
-
-
+void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name);
+//int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_ic_l, double p1_ic_l, double x1_ic_r, double x2_ic_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l);
+int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l);
+int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer);
 
 
 
 int main(void)
 {
+    double x1, x2, p1, p2, integr;
+    double x1_answer, x2_answer;
+    solve_dp(0, 10, 1e-10, 1, 0, 0, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
+    check_shooting_method(0, M_PI, 1e-9, 1e-4, 1, 1, 1, 0, &x1_answer, &x2_answer);
+    printf("%lf %lf \n", x1_answer, x2_answer);
+    //solve_dp(0, 10, 1e-10, 1, 0, -1, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
     return 0;
 }
+
+
+
+
+
+
 
 double max(double x1, double x2)
 {
@@ -103,30 +116,44 @@ double fmin(double x1, double x2)
 double f1(double t, double x1, double x2, double p1, double p2, double integr)
 {
     return x2;
+    return x2;
+    return x2;
 }
 double f2(double t, double x1, double x2, double p1, double p2, double integr)
 {
+    return cos(t);
+    return cos(t);
+    return p1;
     return p2/2. - x1*exp(-alpha*x1);
 }
 double f3(double t, double x1, double x2, double p1, double p2, double integr)
 {
+    return 0;
+    return p2;
     return -p2*(-exp(-alpha*x1) + alpha*x1*exp(-alpha*x1));
 }
 double f4(double t, double x1, double x2, double p1, double p2, double integr)
 {
+    return 0;
+    return sin(t);
     return -p1;
 }
 double f5(double t, double x1, double x2, double p1, double p2, double integr)
 {
+    return 0;
     return p2*p2/4.;
 }
 double check_sol(double t)
 {
-    return t;
+    return cos(t);
 }
 double norm(double x1, double x2, double p1, double p2, double integr)
 {
     return fmax(x1, fmax(x2, fmax(p1, fmax(p2, integr))));
+}
+double norm2(double x1, double x2)
+{
+    return fmax(x1, x2);
 }
 double get_h(double h, double err, double tol)
 {
@@ -220,170 +247,14 @@ double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_
     *integr = integr_7;
     return norm(x1_7 - x1_8, x2_7 - x2_8, p1_7 - p1_8, p2_7 - p2_8, integr_7 - integr_8);  
 }
-
-/*
-double fmax(double * data, int len)
-{
-    double max;
-    int i;
-    for(i = 0; i < len; i++)
-    {
-        max = (max > fabs(data[i])) ? max : data[i];
-    }
-    return max;
-}
-double fmin(double * data, int len)
-{
-    double min;
-    int i;
-    for(i = 0; i < len; i++)
-    {
-        min = (min <  fabs(data[i])) ? min : data[i];
-    }
-    return min;
-}
-double f1(double * data)
-{
-    return data[X2];
-}
-double f2(double * data)
-{
-    return data[P2]/2 - data[X1]*exp(-alpha*data[X1]);
-}
-double f3(double * data)
-{
-    return -data[P2]*(-exp(-data[X1]*alpha) + alpha*data[X1]*exp(-alpha*data[X1]));
-}
-double f4(double * data)
-{
-    return -data[P1];
-}
-double f5(double * data)
-{
-    return data[P2]*data[P2]/4;
-}
-
-double check_sol(double t)
-{
-    return t;
-}
-void print_data(double * data, FILE * output)
-{
-    fprintf(output, "%e %e %e %e %e \n", data[T], data[X1], data[X2], data[P1], data[P2], data[INTEGR]);
-}
-
-double norm(double * data, int len)
-{
-    return fmax(data, len);
-}
-double norm1(double x1, double x2, double x3, double x4, double x5)
-{
-    return max(fabs(x1), max(fabs(x2), max(fabs(x3), max(fabs(x4), fabs(x5)))));
-}
-double get_h(double h, double err, double tol)
-{
-    if(err < EPS)
-        err = 2*EPS;
-    h *= min(facmax, max(facmin, fac*pow(tol/err, 1./7.)));
-    if(h < EPS)
-        h = 2*EPS;
-    return h;
-}
-void dorman_prince(double h, double * initial_cond, double * res)
-{
-    double tmp[6];
-    double k[5][13];
-    int i, j;
-    k[X1][0] = f1(initial_cond);
-    k[X2][0] = f2(initial_cond);
-    k[P1][0] = f3(initial_cond);
-    k[P2][0] = f4(initial_cond);
-    k[INTEGR][0] = f5(initial_cond);
-    for(i = 1; i < 13; i++)
-    {
-        tmp[T] = initial_cond[T]*c[i]*h;
-        tmp[X1] = initial_cond[X1];
-        tmp[X2] = initial_cond[X2];
-        tmp[P1] = initial_cond[P1];
-        tmp[P2] = initial_cond[P2];
-        tmp[INTEGR] = initial_cond[INTEGR];
-        for(j = 0; j < i; j++)
-        {
-            tmp[X1] += a[i][j]*h*k[X1][j];
-            tmp[X2] += a[i][j]*h*k[X2][j];
-            tmp[P1] += a[i][j]*h*k[P1][j];
-            tmp[P2] += a[i][j]*h*k[P2][j];
-            tmp[INTEGR] += a[i][j]*h*k[INTEGR][j];
-        }
-        k[0][i] = f1(tmp);
-        k[1][i] = f2(tmp);
-        k[2][i] = f3(tmp);
-        k[3][i] = f4(tmp);
-        k[4][i] = f5(tmp);
-    }
-
-    memset(tmp, 0, sizeof(double)*6);
-    for(i = 0; i < 13; i++)
-    {
-        tmp[X1] += b[i]*k[X1][i];
-        tmp[X2] += b[i]*k[X2][i];
-        tmp[P1] += b[i]*k[P1][i];
-        tmp[P2] += b[i]*k[P2][i];
-        tmp[INTEGR] += b[i]*k[INTEGR][i];
-    }
-    tmp[X1] *= h;
-    tmp[X2] *= h;
-    tmp[P1] *= h;
-    tmp[P2] *= h;
-    tmp[INTEGR] *= h;
-    tmp[X1] += initial_cond[X1];
-    tmp[X2] += initial_cond[X2];
-    tmp[P1] += initial_cond[P1];
-    tmp[P2] += initial_cond[P2];
-    tmp[INTEGR] += initial_cond[INTEGR];
-    res[X1] = tmp[X1];
-    res[X2] = tmp[X2];
-    res[P1] = tmp[P1];
-    res[P2] = tmp[P2];
-    res[INTEGR] = tmp[INTEGR];
-
-    memset(tmp, 0, sizeof(double)*6);
-    for(i = 0; i < 13; i++)
-    {
-        tmp[X1] += b_[i]*k[X1][i];
-        tmp[X2] += b_[i]*k[X2][i];
-        tmp[P1] += b_[i]*k[P1][i];
-        tmp[P2] += b_[i]*k[P2][i];
-        tmp[INTEGR] += b_[i]*k[INTEGR][i];
-    }
-    tmp[X1] *= h;
-    tmp[X2] *= h;
-    tmp[P1] *= h;
-    tmp[P2] *= h;
-    tmp[INTEGR] *= h;
-    tmp[X1] += initial_cond[X1];
-    tmp[X2] += initial_cond[X2];
-    tmp[P1] += initial_cond[P1];
-    tmp[P2] += initial_cond[P2];
-    tmp[INTEGR] += initial_cond[INTEGR];
-    res[X1 + 6] = tmp[X1];
-    res[X2 + 6] = tmp[X2];
-    res[P1 + 6] = tmp[P1];
-    res[P2 + 6] = tmp[P2];
-    res[INTEGR + 6] = tmp[INTEGR];
-}
-double solve_dp(double l, double r, double * initital_cond, double * res, unsigned int attr, const char* name)
+void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name)
 {
     double h, err;
-    double glob_err = 0.;
+    double glob_err = 0.f;
     FILE * output;
-    double last = 0.;
-    double max_norm = 0.;
-    double res_tmp[12];
-    double cur[6];
-    memcpy(cur, initital_cond, sizeof(double)*6);
-    h = 0.01;
-    if(!(attr & NO_WRITE))
+    double x1_tmp, x2_tmp, p1_tmp, p2_tmp, integr_tmp;
+    h = 0.1;
+    if(attr & WRITE_IN_FILE)
     {
         output = fopen(name, "w");
         if(output == NULL)
@@ -391,19 +262,87 @@ double solve_dp(double l, double r, double * initital_cond, double * res, unsign
             printf("Cannot open file to write \n");
             exit(EXIT_FAILURE);
         }
-        print_data(initital_cond, output);
+        fprintf(output, "%e %e %e %e %e %e \n", l, x1_ic, x1_ic - check_sol(l), p1_ic, p2_ic, integr_ic);
     }
     while(l < r)
     {
         if(l + h > r)
             h = r - l;
-        dorman_prince(h, cur, res_tmp);
-        err = norm1(res_tmp[X1] - res_tmp[X1 + 6], res_tmp[X2] - res_tmp[X2 + 6], res_tmp[P1] - res_tmp[P1 + 6], res_tmp[P2] - res_tmp[P2 + 6], res_tmp[INTEGR] - res_tmp[INTEGR + 6]);
+        err = dorman_prince(h, l, x1_ic, x2_ic, p1_ic, p2_ic, integr_ic, &x1_tmp, &x2_tmp, &p1_tmp, &p2_tmp, &integr_tmp);
         if(err < tol)
         {
             l += h;
-            memcpy(cur, res_tmp + )
+            if(attr&WRITE_IN_FILE)
+            {
+                fprintf(output, "%e %e %e %e %e %e \n", l, x1_tmp, x1_tmp - check_sol(l), p1_tmp, p2_tmp, integr_tmp);
+            }
+            h = get_h(h, err, tol);
+            x1_ic = x1_tmp; x2_ic = x2_tmp; p1_ic = p1_tmp; p2_ic = p2_tmp; integr_ic = integr_tmp;
         }
-     }
+        else 
+            h = get_h(h, err, tol);
+    }
+    if(attr&WRITE_IN_FILE)
+        fclose(output);
+    *x1 = x1_ic; *x2 = x2_ic; *p1 = p1_ic; *p2 = p2_ic; *integr = integr_ic;
 }
-*/
+int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l)
+{
+    double x1_r_, x2_r_;
+    double trash;
+    double jack[4];
+    double eps = 1e-10;
+    do
+    {
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l, p2_l, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL);
+        double left_value_x1, right_value_x1;
+        double left_value_x2, right_value_x2;
+        solve_dp(l, r, tol, x1_l, x2_l - eps, p1_l, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l + eps, p1_l, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
+        jack[0] = (right_value_x1 - left_value_x1)/(2.*eps);
+        jack[1] = (right_value_x2 - left_value_x2)/(2.*eps);
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l - eps, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l + eps, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
+        jack[2] = (right_value_x1 - left_value_x1)/(2.*eps);
+        jack[3] = (right_value_x2 - left_value_x2)/(2.*eps);
+        x2_l = x2_l - (jack[0]*(x1_r_ - x1_r) + jack[1]*(x2_r_ - x2_r));
+        p1_l = p1_l - (jack[2]*(x1_r_ - x1_r) + jack[3]*(x2_r_ - x2_r));
+    } while (norm2(x1_r - x1_r_, x2_r - x2_r_) > shooting_method_accuracy);
+    *x1_ic_answer_l = x1_l;
+    *x2_ic_answer_l = x2_l;
+    *p1_ic_answer_l = p1_l;
+    *p2_ic_answer_l = p2_l;
+}
+int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer)
+{
+    double x1_r_;
+    double x2_r_;
+    double trash;
+    double jack[4];
+    double eps = 1e-10;
+    do
+    {
+        solve_dp(l, r, tol, x1_l, x2_l, 0, 0, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL);
+        double x1_left_value, x1_right_value;
+        double x2_left_value, x2_right_value;
+        solve_dp(l, r, tol, x1_l - eps, x2_l, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l + eps, x2_l, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
+        jack[0] = (x1_right_value - x1_left_value)/(2.*eps);
+        jack[1] = (x2_right_value - x2_left_value)/(2.*eps);
+        solve_dp(l, r, tol, x1_l, x2_l - eps, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l + eps, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
+        jack[2] = (x1_right_value - x1_left_value)/(2.*eps);
+        jack[3] = (x2_right_value - x2_left_value)/(2.*eps);
+        double det = jack[0]*jack[3] - jack[1]*jack[2];
+        double inverse[4];
+        inverse[0] = jack[3]/det;
+        inverse[1] = -jack[2]/det;
+        inverse[2] = -jack[1]/det;
+        inverse[3] = jack[0]/det;
+        printf("%lf %lf \n", x1_l, x2_l);
+        x1_l = x1_l - (inverse[0])*(x1_r_ - x1_r) - (inverse[1])*(x2_r_ - x2_r);
+        x2_l = x2_l - (inverse[2])*(x1_r_ - x1_r) - inverse[3]*(x2_r_ - x2_r);
+    } while (fabs(x1_r - x1_r_) > 1e-5);
+    *x1_l_answer = x1_l;    
+    *x2_l_answer = x2_l;
+}
