@@ -85,7 +85,7 @@ int main(void)
     double x1, x2, p1, p2, integr;
     double x1_answer, x2_answer;
     solve_dp(0, 10, 1e-10, 1, 0, 0, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
-    check_shooting_method(0, M_PI, 1e-9, 1e-4, 1, 1, 1, 0, &x1_answer, &x2_answer);
+    check_shooting_method(0, M_PI, 1e-14, 1e-8, 100, -1344, 1, 0, &x1_answer, &x2_answer);
     printf("%lf %lf \n", x1_answer, x2_answer);
     //solve_dp(0, 10, 1e-10, 1, 0, -1, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
     return 0;
@@ -342,7 +342,7 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
         printf("%lf %lf \n", x1_l, x2_l);
         x1_l = x1_l - (inverse[0])*(x1_r_ - x1_r) - (inverse[1])*(x2_r_ - x2_r);
         x2_l = x2_l - (inverse[2])*(x1_r_ - x1_r) - inverse[3]*(x2_r_ - x2_r);
-    } while (fabs(x1_r - x1_r_) > 1e-5);
+    } while (fabs(x1_r - x1_r_) > shooting_method_accuracy);
     *x1_l_answer = x1_l;    
     *x2_l_answer = x2_l;
 }
