@@ -23,7 +23,7 @@ const double fac = 0.8;
 const double facmin = 0.0;
 const double facmax = 1.5;
 
-const double alpha = 0.;
+const double alpha = 25.;
 
 double c[13] = {0., 1./18., 1./12., 1./8., 5./16., 3./8., 59./400., 93./200., 5490023248./9719169821., 13./20., 1201146811./1299019798., 1., 1.};
 double a[13][12] = {{0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.},\
@@ -75,7 +75,6 @@ int inverse_matrix(double * data, double * inversed);
 
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr);
 void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name);
-//int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_ic_l, double p1_ic_l, double x1_ic_r, double x2_ic_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l);
 int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l);
 int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer);
 
@@ -84,11 +83,13 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
 int main(void)
 {
     double x1, x2, p1, p2, integr;
-    double x1_answer, x2_answer;
+    double x1_answer, x2_answer, p1_answer, p2_answer, integr_answer;
     solve_dp(0, 10, 1e-10, 1, 0, 0, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
-    check_shooting_method(0, M_PI, 1e-14, 1e-8, 100, -1344, 1, 0, &x1_answer, &x2_answer);
-    printf("%lf %lf \n", x1_answer, x2_answer);
-    //solve_dp(0, 10, 1e-10, 1, 0, -1, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
+    //shooting_method(0, M_PI, 1e-15, 1e-7, 1, 100000, -100, 0, -1, 0, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
+    shooting_method(0, M_PI/2., 1e-15, 1e-4, 0, 0, 0, 0, 0, -M_PI/2., &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
+    solve_dp(0, M_PI/2., 1e-15, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer/2., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.data");
+    //printf("%lf %lf \n", x1_answer, x2_answer);
+    printf("\n this is answer for the left point - %lf %lf %lf %lf %lf \n", x1_answer, x2_answer, p1_answer, p2_answer, integr_answer);
     return 0;
 }
 
@@ -116,32 +117,34 @@ double fmin(double x1, double x2)
 }
 double f1(double t, double x1, double x2, double p1, double p2, double integr)
 {
-    return x2;
-    return x2;
+    //return x2;
+    //return x2;
     return x2;
 }
 double f2(double t, double x1, double x2, double p1, double p2, double integr)
 {
-    return cos(t);
-    return cos(t);
-    return p1;
+    //return p1;
+    //return cos(t);
+    //return cos(t);
+    //return p1;
     return p2/2. - x1*exp(-alpha*x1);
 }
 double f3(double t, double x1, double x2, double p1, double p2, double integr)
 {
-    return 0;
-    return p2;
+    //return p2;
+    //return 0;
+    //return p2;
     return -p2*(-exp(-alpha*x1) + alpha*x1*exp(-alpha*x1));
 }
 double f4(double t, double x1, double x2, double p1, double p2, double integr)
 {
-    return 0;
-    return sin(t);
+    //return cos(t);
+    //return sin(t);
     return -p1;
 }
 double f5(double t, double x1, double x2, double p1, double p2, double integr)
 {
-    return 0;
+    //return 0;
     return p2*p2/4.;
 }
 double check_sol(double t)
@@ -303,12 +306,13 @@ int shooting_method(double l, double r, double tol, double shooting_method_accur
     double x1_r_, x2_r_;
     double trash;
     double jack[4];
+    double inversed[4];
     double eps = 1e-10;
+    double left_value_x1, right_value_x1;
+    double left_value_x2, right_value_x2;
     do
     {
         solve_dp(l, r, tol, x1_l, x2_l, p1_l, p2_l, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL);
-        double left_value_x1, right_value_x1;
-        double left_value_x2, right_value_x2;
         solve_dp(l, r, tol, x1_l, x2_l - eps, p1_l, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL);
         solve_dp(l, r, tol, x1_l, x2_l + eps, p1_l, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
         jack[0] = (right_value_x1 - left_value_x1)/(2.*eps);
@@ -317,8 +321,10 @@ int shooting_method(double l, double r, double tol, double shooting_method_accur
         solve_dp(l, r, tol, x1_l, x2_l, p1_l + eps, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
         jack[2] = (right_value_x1 - left_value_x1)/(2.*eps);
         jack[3] = (right_value_x2 - left_value_x2)/(2.*eps);
-        x2_l = x2_l - (jack[0]*(x1_r_ - x1_r) + jack[1]*(x2_r_ - x2_r));
-        p1_l = p1_l - (jack[2]*(x1_r_ - x1_r) + jack[3]*(x2_r_ - x2_r));
+        inverse_matrix(jack, inversed);
+        printf("%lf %lf", x2_l, p1_l);
+        x2_l = x2_l - (inversed[0]*(x1_r_ - x1_r) + inversed[1]*(x2_r_ - x2_r));
+        p1_l = p1_l - (inversed[2]*(x1_r_ - x1_r) + inversed[3]*(x2_r_ - x2_r));
     } while (norm2(x1_r - x1_r_, x2_r - x2_r_) > shooting_method_accuracy);
     *x1_ic_answer_l = x1_l;
     *x2_ic_answer_l = x2_l;
@@ -345,13 +351,8 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
         solve_dp(l, r, tol, x1_l, x2_l + eps, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
         jack[2] = (x1_right_value - x1_left_value)/(2.*eps);
         jack[3] = (x2_right_value - x2_left_value)/(2.*eps);
-        //double det = jack[0]*jack[3] - jack[1]*jack[2];
         double inverse[4];
         inverse_matrix(jack, inverse);
-        //inverse[0] = jack[3]/det;
-        //inverse[1] = -jack[2]/det;
-        //inverse[2] = -jack[1]/det;
-        //inverse[3] = jack[0]/det;
         printf("%lf %lf \n", x1_l, x2_l);
         x1_l = x1_l - (inverse[0])*(x1_r_ - x1_r) - (inverse[1])*(x2_r_ - x2_r);
         x2_l = x2_l - (inverse[2])*(x1_r_ - x1_r) - inverse[3]*(x2_r_ - x2_r);
