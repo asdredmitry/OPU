@@ -70,6 +70,7 @@ double check_sol(double t);
 double norm(double x1, double x2, double p1, double p2, double integr);
 double norm2(double x1, double x2);
 double get_h(double h, double err, double tol);
+int inverse_matrix(double * data, double * inversed);
 
 
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr);
@@ -163,6 +164,17 @@ double get_h(double h, double err, double tol)
     if(h < EPS)
         h = 2*EPS;
     return h;
+}
+int inverse_matrix(double* data, double* res)
+{
+    double det = 0.;
+    det = data[0]*data[3] - data[2]*data[1];
+    if(fabs(det) < EPS)
+        return 0;
+    res[0] = data[3]/det;
+    res[1] = -data[2]/det;
+    res[2] = -data[1]/det;
+    res[3] = data[0]/det;
 }
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr)
 {
@@ -333,12 +345,13 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
         solve_dp(l, r, tol, x1_l, x2_l + eps, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
         jack[2] = (x1_right_value - x1_left_value)/(2.*eps);
         jack[3] = (x2_right_value - x2_left_value)/(2.*eps);
-        double det = jack[0]*jack[3] - jack[1]*jack[2];
+        //double det = jack[0]*jack[3] - jack[1]*jack[2];
         double inverse[4];
-        inverse[0] = jack[3]/det;
-        inverse[1] = -jack[2]/det;
-        inverse[2] = -jack[1]/det;
-        inverse[3] = jack[0]/det;
+        inverse_matrix(jack, inverse);
+        //inverse[0] = jack[3]/det;
+        //inverse[1] = -jack[2]/det;
+        //inverse[2] = -jack[1]/det;
+        //inverse[3] = jack[0]/det;
         printf("%lf %lf \n", x1_l, x2_l);
         x1_l = x1_l - (inverse[0])*(x1_r_ - x1_r) - (inverse[1])*(x2_r_ - x2_r);
         x2_l = x2_l - (inverse[2])*(x1_r_ - x1_r) - inverse[3]*(x2_r_ - x2_r);
