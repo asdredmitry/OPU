@@ -7,15 +7,10 @@ const double EPS = 1e-50;
 const double H_MIN =  __DBL_MAX__;
 
 const unsigned int FULL_NORM = 1;
-const unsigned int LOL = (1 << 1);
+const unsigned int COMPUTE_MAX_ERR = (1 << 1);
 const unsigned int LAST_NORM = 1 << 2;
 const unsigned int WRITE_IN_FILE = 1 << 3;
-const unsigned int GET_LAST = 1 << 5;
-const unsigned int PRINT_H = 1 << 6;
-const unsigned int PRINT_GLOBAL_ERROR = 1 << 7;
 
-const unsigned int WRITE_PERIODS = 1;
-const unsigned int WRITE_ZEROES = 1 << 2;
 const int MAX_STEPS_SHOOTING = 100000;
 
 
@@ -23,7 +18,7 @@ const double fac = 0.8;
 const double facmin = 0.0;
 const double facmax = 1.5;
 
-const double alpha = 25.;
+const double alpha = 0;
 
 double c[13] = {0., 1./18., 1./12., 1./8., 5./16., 3./8., 59./400., 93./200., 5490023248./9719169821., 13./20., 1201146811./1299019798., 1., 1.};
 double a[13][12] = {{0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.},\
@@ -66,6 +61,10 @@ double f4(double t, double x1, double x2, double p1, double p2, double integr);
 double f5(double t, double x1, double x2, double p1, double p2, double integr);
 
 double check_sol(double t);
+double check_x1(double t);
+double check_x2(double t);
+double check_p1(double t);
+double check_p2(double t);
 
 double norm(double x1, double x2, double p1, double p2, double integr);
 double norm2(double x1, double x2);
@@ -86,8 +85,9 @@ int main(void)
     double x1_answer, x2_answer, p1_answer, p2_answer, integr_answer;
     solve_dp(0, 10, 1e-10, 1, 0, 0, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
     //shooting_method(0, M_PI, 1e-15, 1e-7, 1, 100000, -100, 0, -1, 0, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
-    shooting_method(0, M_PI/2., 1e-15, 1e-4, 0, 0, 0, 0, 0, -M_PI/2., &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
-    solve_dp(0, M_PI/2., 1e-15, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer/2., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.data");
+    shooting_method(0, M_PI/2., 1e-20, 1e-15, 0, 0, 0, 0, 0, -M_PI/2., &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
+    solve_dp(0, M_PI/2., 1e-20, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer/2., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE|COMPUTE_MAX_ERR, "data.data");
+    printf("\n this is answers for the right point - %lf %lf %lf %lf %lf", x1, x2, p1, p2, integr);
     //printf("%lf %lf \n", x1_answer, x2_answer);
     printf("\n this is answer for the left point - %lf %lf %lf %lf %lf \n", x1_answer, x2_answer, p1_answer, p2_answer, integr_answer);
     return 0;
@@ -150,6 +150,22 @@ double f5(double t, double x1, double x2, double p1, double p2, double integr)
 double check_sol(double t)
 {
     return cos(t);
+}
+double check_x1(double t)
+{
+    return t;
+}
+double check_x2(double t)
+{
+    return t;
+}
+double chekc_p1(double t)
+{
+    return t;
+}
+double check_p2(double t)
+{
+    return -4*sin(t);
 }
 double norm(double x1, double x2, double p1, double p2, double integr)
 {
@@ -265,7 +281,7 @@ double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_
 void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name)
 {
     double h, err;
-    double glob_err = 0.f;
+    double max_err = 0.f;
     FILE * output;
     double x1_tmp, x2_tmp, p1_tmp, p2_tmp, integr_tmp;
     h = 0.1;
@@ -277,7 +293,9 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
             printf("Cannot open file to write \n");
             exit(EXIT_FAILURE);
         }
-        fprintf(output, "%e %e %e %e %e %e \n", l, x1_ic, x1_ic - check_sol(l), p1_ic, p2_ic, integr_ic);
+        if(attr&COMPUTE_MAX_ERR)
+            max_err = fmax(max_err, p2_ic - check_p2(l));
+        fprintf(output, "%e %e %e %e %e %e \n", l, x1_ic, x2_ic, p1_ic, p2_ic, integr_ic);
     }
     while(l < r)
     {
@@ -289,8 +307,10 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
             l += h;
             if(attr&WRITE_IN_FILE)
             {
-                fprintf(output, "%e %e %e %e %e %e \n", l, x1_tmp, x1_tmp - check_sol(l), p1_tmp, p2_tmp, integr_tmp);
+                fprintf(output, "%e %e %e %e %e %e \n", l, x1_tmp, x2_tmp, p1_tmp, p2_tmp, integr_tmp);
             }
+            if(attr&COMPUTE_MAX_ERR)
+                max_err = fmax(max_err, p2_tmp - check_p2(l));
             h = get_h(h, err, tol);
             x1_ic = x1_tmp; x2_ic = x2_tmp; p1_ic = p1_tmp; p2_ic = p2_tmp; integr_ic = integr_tmp;
         }
@@ -299,6 +319,8 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
     }
     if(attr&WRITE_IN_FILE)
         fclose(output);
+    if(attr&COMPUTE_MAX_ERR)
+        printf(" This is max_err - %e\n", max_err);
     *x1 = x1_ic; *x2 = x2_ic; *p1 = p1_ic; *p2 = p2_ic; *integr = integr_ic;
 }
 int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l)
@@ -307,7 +329,7 @@ int shooting_method(double l, double r, double tol, double shooting_method_accur
     double trash;
     double jack[4];
     double inversed[4];
-    double eps = 1e-10;
+    double eps = 1e-30;
     double left_value_x1, right_value_x1;
     double left_value_x2, right_value_x2;
     do
