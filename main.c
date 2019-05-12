@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 const double EPS = 1e-50;
 const double H_MIN =  __DBL_MAX__;
 
@@ -18,7 +19,7 @@ const double fac = 0.8;
 const double facmin = 0.0;
 const double facmax = 1.5;
 
-const double alpha = 0;
+double alpha = 0;
 
 double c[13] = {0., 1./18., 1./12., 1./8., 5./16., 3./8., 59./400., 93./200., 5490023248./9719169821., 13./20., 1201146811./1299019798., 1., 1.};
 double a[13][12] = {{0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.},\
@@ -73,23 +74,25 @@ int inverse_matrix(double * data, double * inversed);
 
 
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr);
-void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name);
+void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name, double* max_err);
 int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l);
 int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer);
-
+void create_table(double step_alpha, double shooting_method_accuracy, double tol, const char* name);
 
 
 int main(void)
 {
     double x1, x2, p1, p2, integr;
+    double x2_l, p1_l;
     double x1_answer, x2_answer, p1_answer, p2_answer, integr_answer;
-    solve_dp(0, 10, 1e-10, 1, 0, 0, 0, 0, &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE, "data.dat");
-    //shooting_method(0, M_PI, 1e-15, 1e-7, 1, 100000, -100, 0, -1, 0, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
-    shooting_method(0, M_PI/2., 1e-20, 1e-15, 0, 0, 0, 0, 0, -M_PI/2., &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
-    solve_dp(0, M_PI/2., 1e-20, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer/2., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE|COMPUTE_MAX_ERR, "data.data");
-    printf("\n this is answers for the right point - %lf %lf %lf %lf %lf", x1, x2, p1, p2, integr);
-    //printf("%lf %lf \n", x1_answer, x2_answer);
-    printf("\n this is answer for the left point - %lf %lf %lf %lf %lf \n", x1_answer, x2_answer, p1_answer, p2_answer, integr_answer);
+    x2_l = 3338;
+    p1_l = 1232;
+    alpha = 0;
+    shooting_method(0, M_PI/2., 1e-14, 1e-6, 0, x2_l, p1_l, 0, 0, -M_PI/2, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
+    solve_dp(0, M_PI/2., 1e-14, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer*p2_answer/4., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE|COMPUTE_MAX_ERR, "data.data", NULL);
+    printf("This is left points - %lf %lf %lf %lf %lf \n", x1_answer, x2_answer, p1_answer, p2_answer, 0.);
+    printf("This is right points - %lf %lf %lf %lf %lf \n", x1, x2, p1, p2, integr);
+    printf("This is functional - %lf \n", integr);
     return 0;
 }
 
@@ -194,6 +197,7 @@ int inverse_matrix(double* data, double* res)
     res[1] = -data[2]/det;
     res[2] = -data[1]/det;
     res[3] = data[0]/det;
+    return 1;
 }
 double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr)
 {
@@ -278,10 +282,10 @@ double dorman_prince(double h, double t,  double x1_ic, double x2_ic, double p1_
     *integr = integr_7;
     return norm(x1_7 - x1_8, x2_7 - x2_8, p1_7 - p1_8, p2_7 - p2_8, integr_7 - integr_8);  
 }
-void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name)
+void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double p1_ic, double p2_ic, double integr_ic, double* x1, double* x2, double* p1, double* p2, double* integr, unsigned int attr, const char* name, double* max_err)
 {
     double h, err;
-    double max_err = 0.f;
+    double max_e = 0.f;
     FILE * output;
     double x1_tmp, x2_tmp, p1_tmp, p2_tmp, integr_tmp;
     h = 0.1;
@@ -294,7 +298,7 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
             exit(EXIT_FAILURE);
         }
         if(attr&COMPUTE_MAX_ERR)
-            max_err = fmax(max_err, p2_ic - check_p2(l));
+            max_e = fmax(max_e, p2_ic - check_p2(l));
         fprintf(output, "%e %e %e %e %e %e \n", l, x1_ic, x2_ic, p1_ic, p2_ic, integr_ic);
     }
     while(l < r)
@@ -310,7 +314,7 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
                 fprintf(output, "%e %e %e %e %e %e \n", l, x1_tmp, x2_tmp, p1_tmp, p2_tmp, integr_tmp);
             }
             if(attr&COMPUTE_MAX_ERR)
-                max_err = fmax(max_err, p2_tmp - check_p2(l));
+                max_e = fmax(max_e, p2_tmp - check_p2(l));
             h = get_h(h, err, tol);
             x1_ic = x1_tmp; x2_ic = x2_tmp; p1_ic = p1_tmp; p2_ic = p2_tmp; integr_ic = integr_tmp;
         }
@@ -320,7 +324,7 @@ void solve_dp(double l, double r, double tol, double x1_ic, double x2_ic, double
     if(attr&WRITE_IN_FILE)
         fclose(output);
     if(attr&COMPUTE_MAX_ERR)
-        printf(" This is max_err - %e\n", max_err);
+        printf(" This is max_err - %e\n", max_e);
     *x1 = x1_ic; *x2 = x2_ic; *p1 = p1_ic; *p2 = p2_ic; *integr = integr_ic;
 }
 int shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double p1_l, double p2_l, double x1_r, double x2_r, double* x1_ic_answer_l, double *x2_ic_answer_l, double* p1_ic_answer_l, double* p2_ic_answer_l, double* integral_ic_answer_l)
@@ -329,22 +333,22 @@ int shooting_method(double l, double r, double tol, double shooting_method_accur
     double trash;
     double jack[4];
     double inversed[4];
-    double eps = 1e-30;
+    double eps = 1e-10;
     double left_value_x1, right_value_x1;
     double left_value_x2, right_value_x2;
     do
     {
-        solve_dp(l, r, tol, x1_l, x2_l, p1_l, p2_l, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL);
-        solve_dp(l, r, tol, x1_l, x2_l - eps, p1_l, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL);
-        solve_dp(l, r, tol, x1_l, x2_l + eps, p1_l, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l, p2_l, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l - eps, p1_l, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l + eps, p1_l, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL, NULL);
         jack[0] = (right_value_x1 - left_value_x1)/(2.*eps);
         jack[1] = (right_value_x2 - left_value_x2)/(2.*eps);
-        solve_dp(l, r, tol, x1_l, x2_l, p1_l - eps, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL);
-        solve_dp(l, r, tol, x1_l, x2_l, p1_l + eps, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l - eps, p2_l, 0, &left_value_x1, &left_value_x2, &trash, &trash, &trash, 0, NULL, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l, p1_l + eps, p2_l, 0, &right_value_x1, &right_value_x2, &trash, &trash, &trash, 0, NULL, NULL);
         jack[2] = (right_value_x1 - left_value_x1)/(2.*eps);
         jack[3] = (right_value_x2 - left_value_x2)/(2.*eps);
-        inverse_matrix(jack, inversed);
-        printf("%lf %lf", x2_l, p1_l);
+        if(inverse_matrix(jack, inversed) == 0)
+            return 0;
         x2_l = x2_l - (inversed[0]*(x1_r_ - x1_r) + inversed[1]*(x2_r_ - x2_r));
         p1_l = p1_l - (inversed[2]*(x1_r_ - x1_r) + inversed[3]*(x2_r_ - x2_r));
     } while (norm2(x1_r - x1_r_, x2_r - x2_r_) > shooting_method_accuracy);
@@ -352,8 +356,9 @@ int shooting_method(double l, double r, double tol, double shooting_method_accur
     *x2_ic_answer_l = x2_l;
     *p1_ic_answer_l = p1_l;
     *p2_ic_answer_l = p2_l;
+    return 1;
 }
-int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer)
+/*int check_shooting_method(double l, double r, double tol, double shooting_method_accuracy, double x1_l, double x2_l, double x1_r, double x2_r, double* x1_l_answer, double* x2_l_answer)
 {
     double x1_r_;
     double x2_r_;
@@ -362,15 +367,15 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
     double eps = 1e-10;
     do
     {
-        solve_dp(l, r, tol, x1_l, x2_l, 0, 0, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l, 0, 0, 0, &x1_r_, &x2_r_, &trash, &trash, &trash, 0, NULL, NULL);
         double x1_left_value, x1_right_value;
         double x2_left_value, x2_right_value;
-        solve_dp(l, r, tol, x1_l - eps, x2_l, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL);
-        solve_dp(l, r, tol, x1_l + eps, x2_l, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l - eps, x2_l, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL, NULL);
+        solve_dp(l, r, tol, x1_l + eps, x2_l, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL, NULL);
         jack[0] = (x1_right_value - x1_left_value)/(2.*eps);
         jack[1] = (x2_right_value - x2_left_value)/(2.*eps);
-        solve_dp(l, r, tol, x1_l, x2_l - eps, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL);
-        solve_dp(l, r, tol, x1_l, x2_l + eps, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l - eps, 0, 0, 0, &x1_left_value, &x2_left_value, &trash, &trash, &trash, 0, NULL, NULL);
+        solve_dp(l, r, tol, x1_l, x2_l + eps, 0, 0, 0, &x1_right_value, &x2_right_value, &trash, &trash, &trash, 0, NULL, NULL);
         jack[2] = (x1_right_value - x1_left_value)/(2.*eps);
         jack[3] = (x2_right_value - x2_left_value)/(2.*eps);
         double inverse[4];
@@ -381,4 +386,37 @@ int check_shooting_method(double l, double r, double tol, double shooting_method
     } while (fabs(x1_r - x1_r_) > shooting_method_accuracy);
     *x1_l_answer = x1_l;    
     *x2_l_answer = x2_l;
+}
+*/
+void create_table(double step_alpha, double shooting_method_accuracy, double tol, const char* name)
+{
+    FILE * output;
+    int i;
+    double x1_l, x2_l, p1_l, p2_l;
+    double x1_r, x2_r, p1_r, p2_r, integr_r;
+    double x1_answer, x2_answer, p1_answer, p2_answer, integr_answer;
+    output = fopen(name, "w");
+    if(output == NULL)
+    {
+        printf("Cannot create file to write table \n");
+        exit(EXIT_FAILURE);
+    }
+    srand(time(NULL));
+    for(alpha = 0.; alpha <= 25.; alpha += step_alpha)
+    {
+        fprintf(output, "\\subsection{$\\alpha = %lf$} \n", alpha);
+        fprintf(output, "Метод Ньютона сошелся с большого количества начальных точек к результатам, указанным ниже. \\\\ \n");
+        fprintf(output, "\\begin{tabular}{ | c | c | c | c |} \n");
+        fprintf(output, "\\hline \n");
+        fprintf(output, "Initial point  & Newton method result & Right point & Functional \n \\\\ $x_2(0), \\; p_1(0)$ & $x_2(0), \\; p_1(0)$ & $x_1\\l(\\frac{\\pi}{2}\\r), \\; x_2\\l(\\frac{\\pi}{2}\\r)$ & $\\int_{0}^{\\frac{\\pi}{2}}u^2dt$  \\\\ \\hline \n");
+        for(i = 0; i < 8; i++)
+        {
+            x1_l = 0.; x2_l = i; p1_l = -i; p2_l = 0.; x1_r = 0.; x2_r = -M_PI/2.;
+            shooting_method(0, M_PI/2., 1e-20, shooting_method_accuracy, x1_l, x2_l, p1_l, p2_l, x1_r, x2_r, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer); 
+            solve_dp(0, M_PI/2., tol, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer/2., &x1_r, &x2_r, &p1_r, &p2_r, &integr_r, WRITE_IN_FILE, "output.dat", NULL);
+            fprintf(output, "%e; %e & %e; %e & %e; %e & %e \\\\ \\hline \n", x2_l, p1_l, x2_answer, p1_answer, x1_r, x2_r, integr_r - p2_answer/2.);
+        }
+        fprintf(output, "\\end{tabular} \n");
+    }
+    fclose(output);
 }
