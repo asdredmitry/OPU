@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.5.5)  12 MAY 2019 22:37
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.5.5)  13 MAY 2019 17:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2375,7 +2375,6 @@ Package pdftex.def Info: integral1(t).png  used on input line 992.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 994.
 Package babel Info: Redefining russian shorthand "|
 (babel)             in language append on input line 994.
 Package babel Info: Redefining russian shorthand "~
@@ -2385,38 +2384,98 @@ Package babel Info: Redefining russian shorthand "|
 Package babel Info: Redefining russian shorthand "~
 (babel)             in language append on input line 994.
 [21 <./x_11(t).png (PNG copy)> <./x_21(t).png (PNG copy)>]
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 994.
- [22 <./p_11(t).png (PNG copy)> <./p_21(t).png (PNG copy)>]
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 994.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 994.
- [23 <./integral1(t).png (PNG copy)>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 994.
+<x_110(t).png, id=345, 1457.5718pt x 735.00128pt>
+File: x_110(t).png Graphic file (type png)
+<use x_110(t).png>
+Package pdftex.def Info: x_110(t).png  used on input line 998.
+(pdftex.def)             Requested size: 443.57848pt x 223.67598pt.
 
-(./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 994.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 994.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<x_210(t).png, id=346, 1457.5718pt x 735.00128pt>
+File: x_210(t).png Graphic file (type png)
+<use x_210(t).png>
+Package pdftex.def Info: x_210(t).png  used on input line 1004.
+(pdftex.def)             Requested size: 443.57848pt x 223.67598pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<p_110(t).png, id=347, 1457.5718pt x 735.00128pt>
+File: p_110(t).png Graphic file (type png)
+<use p_110(t).png>
+Package pdftex.def Info: p_110(t).png  used on input line 1009.
+(pdftex.def)             Requested size: 443.57848pt x 223.67598pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<p_210(t).png, id=348, 1457.5718pt x 735.00128pt>
+File: p_210(t).png Graphic file (type png)
+<use p_210(t).png>
+Package pdftex.def Info: p_210(t).png  used on input line 1014.
+(pdftex.def)             Requested size: 443.57848pt x 223.67598pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<integral10(t).png, id=349, 1457.5718pt x 735.00128pt>
+File: integral10(t).png Graphic file (type png)
+<use integral10(t).png>
+Package pdftex.def Info: integral10(t).png  used on input line 1019.
+(pdftex.def)             Requested size: 443.57848pt x 223.67598pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1021.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+[22 <./p_11(t).png (PNG copy)> <./p_21(t).png (PNG copy)>]
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+ [23 <./integral1(t).png (PNG copy)> <./x_110(t).png (PNG copy)>]
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+ [24 <./x_210(t).png (PNG copy)> <./p_110(t).png (PNG copy)>]
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 1021.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 1021.
+ [25 <./p_210(t).png (PNG copy)> <./integral10(t).png (PNG copy)>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1021.
+ (./report.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1021.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1021.
+
 Package rerunfilecheck Info: File `report.out' has not changed.
 (rerunfilecheck)             Checksum: 417D7FC1720FCCE918FEDC4CF9932715;6993.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 994.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1021.
  ) 
 Here is how much of TeX's memory you used:
- 13052 strings out of 492982
- 178405 string characters out of 6134897
+ 13079 strings out of 492982
+ 178839 string characters out of 6134897
  273380 words of memory out of 5000000
- 16378 multiletter control sequences out of 15000+600000
+ 16398 multiletter control sequences out of 15000+600000
  17193 words of font info for 53 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  34i,10n,35p,480b,355s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -2436,10 +2495,10 @@ lic/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx144
 0.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/te
 xmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/publ
 ic/cm-super/sfrm1728.pfb>
-Output written on report.pdf (23 pages, 600933 bytes).
+Output written on report.pdf (25 pages, 775866 bytes).
 PDF statistics:
- 429 PDF objects out of 1000 (max. 8388607)
- 373 compressed objects within 4 object streams
- 80 named destinations out of 1000 (max. 500000)
- 499 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 443 PDF objects out of 1000 (max. 8388607)
+ 380 compressed objects within 4 object streams
+ 82 named destinations out of 1000 (max. 500000)
+ 524 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -87,7 +87,7 @@ int main(void)
     double x1_answer, x2_answer, p1_answer, p2_answer, integr_answer;
     x2_l = 3338;
     p1_l = 1232;
-    alpha = 0;
+    alpha = 10;
     shooting_method(0, M_PI/2., 1e-14, 1e-6, 0, x2_l, p1_l, 0, 0, -M_PI/2, &x1_answer, &x2_answer, &p1_answer, &p2_answer, &integr_answer);
     solve_dp(0, M_PI/2., 1e-14, x1_answer, x2_answer, p1_answer, p2_answer, p2_answer*p2_answer/4., &x1, &x2, &p1, &p2, &integr, WRITE_IN_FILE|COMPUTE_MAX_ERR, "data.data", NULL);
     printf("This is left points - %lf %lf %lf %lf %lf \n", x1_answer, x2_answer, p1_answer, p2_answer, 0.);
